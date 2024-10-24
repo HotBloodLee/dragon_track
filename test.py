@@ -11,9 +11,10 @@ import uvicorn
 from fastapi import FastAPI, Request
 from collections import defaultdict, deque
 
-TARGET_GROUP = 772590431
-TEST_GROUP = 731189276
-TARGET_USER = 1098422718
+TARGET_GROUP = "组id"
+TARGET_USER = "用户id(数字)"
+
+SEND_URL = ""
 
 OCCUPANCY_LIMIT = 0.2  # 发言总占比阈值 (20%)
 TIME_WINDOW_SHORT = 300  # 时间窗口，单位：秒 (5分钟)
@@ -27,8 +28,8 @@ message_times = deque()  # 记录所有发言时间
 user_messages_time = deque()  # 记录用户的发言时间
 user_messages_content = deque() # 记录用户的发言内容
 
-QIANFAN_AK = "AJUFqcZTN9EDioecyJkSmbW0"
-QIANFAN_SK = "rSr3a9vOPj35WMYgKToVqQUAceljOKJw"
+QIANFAN_AK = "API"
+QIANFAN_SK = "API"
 
 template = """
 你是一位吐槽方面的专家，你的任务是根据用户过去的发言来对用户的水群行为进行非常无礼的吐槽。
@@ -72,8 +73,8 @@ def llm_warn(texts):
     send_warning(res.strip('\n'))
 
 def send_warning(text):
-    warn_txt = f"[没吸龙王警告⚠️]  {text}"
-    requests.post('http://192.168.1.140:3000/send_group_msg', json={
+    warn_txt = f"[龙王警告⚠️]  {text}"
+    requests.post(SEND_URL, json={
         'group_id': TARGET_GROUP,
         'message': [{
             'type': 'text',
@@ -92,7 +93,7 @@ def record_message_total(user_id, data):
         msg = data["message"][0]['data']['text']
     else:
         msg = "[表情包]"
-    if msg.startswith("[没吸龙王警告⚠️]"):
+    if msg.startswith("[龙王警告⚠️]"):
         return
 
     # 记录当前用户的发言
@@ -119,7 +120,7 @@ def record_message(user_id, data):
         msg = data["message"][0]['data']['text']
     else:
         msg = "[表情包]"
-    if msg.startswith("[没吸龙王警告⚠️]"):
+    if msg.startswith("[龙王警告⚠️]"):
         return
     user_messages_content.append(msg)
 
